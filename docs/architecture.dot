@@ -1,0 +1,20 @@
+digraph G {
+  rankdir=LR; dpi=150; fontname="Helvetica"; nodesep=0.35; ranksep=0.55;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, fillcolor="#EEF3FB", color="#2F5597"];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+  user [label="Harness / UI\nchat(user, session, msg, ts)", fillcolor="#FFF2CC", color="#BF9000"];
+  subgraph cluster_a { label="assistant.py : chat()"; style="rounded,dashed"; color="#2F5597"; fontsize=12;
+    learn [label="STEP 1  LEARN\nsplit → extract → save"];
+    scope [label="STEP 2  SCOPE + FIT\nwhich client? build MEMORY\nshrink to token budget"];
+    answer[label="STEP 3  ANSWER\nRunnableWithMessageHistory\ntrim → prompt → ChatOpenAI", fillcolor="#D9E2F3"];
+  }
+  ext [label="extractor.py\nprompt | LLM | PydanticParser", fillcolor="#FCE4D6", color="#C55A11"];
+  faiss [label="fact_store.py\nFAISS per user\n(facts + metadata)", shape=cylinder, fillcolor="#E2F0D9", color="#548235"];
+  hist [label="FileChatMessageHistory\none JSON per session", shape=cylinder, fillcolor="#E2F0D9", color="#548235"];
+  oai [label="OpenAI\nchat · embeddings", fillcolor="#F2F2F2", color="#7F7F7F"];
+  user -> learn; learn -> ext [label="chunks"]; ext -> faiss [label="Fact objects"];
+  learn -> scope -> answer;
+  scope -> faiss [label="filter by account\n(hard scope)"];
+  answer -> hist [dir=both, label="load / append"];
+  answer -> oai; ext -> oai; faiss -> oai [style=dotted, label="embed"];
+}
